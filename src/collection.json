@@ -1,0 +1,9 @@
+{
+  "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "backend-cli": {
+      "description": "A blank schematic.",
+      "factory": "./backend-cli/index#backendCli"
+    }
+  }
+}
