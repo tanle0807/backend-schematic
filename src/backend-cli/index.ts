@@ -1,4 +1,4 @@
-import { Rule, SchematicContext, Tree, apply, url, template, branchAndMerge, mergeWith, Source, move } from '@angular-devkit/schematics';
+import { Rule, SchematicContext, Tree, apply, url, template, branchAndMerge, mergeWith, Source, move, chain } from '@angular-devkit/schematics';
 import { strings, normalize } from '@angular-devkit/core';
 import inquirer from 'inquirer';
 
@@ -11,7 +11,7 @@ const enum Module {
     Controller = 'CONTROLLER',
     ControllerResource = 'CONTROLLER RESOURCE',
     Entity = 'ENTITY',
-    EntityRequest = 'ENTITY REQUEST',
+    EntityRequest = 'ENTITY_REQUEST',
     Service = 'SERVICE',
     ControllerEntityService = 'CONTROLLER + ENTITY + SERVICE'
 }
@@ -27,6 +27,15 @@ const toCamelCase = (str: any) => {
             .join('');
     return s.slice(0, 1).toLowerCase() + s.slice(1);
 };
+
+const toSnakeCase = (str: any) =>
+  str &&
+  str
+    .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+    .map((x: any) => x.toLowerCase())
+    .join('_');
+
+const words = (str: string, pattern = /[^a-zA-Z-]+/) => str.split(pattern).filter(Boolean);
 
 const askQuestionModule = () => {
     return inquirer.prompt({
@@ -177,52 +186,68 @@ const createEntity = async (module: string, rawName: string, options: any): Prom
     return generateTemplate(source, options, folder, params)
 }
 
+const createEntityRequest = async (module: string, rawName: string, options: any): Promise<Rule> => {
+    // const 
+    let folder = `src/${module.toLowerCase()}/`
+
+    console.log('words(toSnakeCase(rawName)):', words(toSnakeCase(rawName)))
+    const [finalName, request] = words(toSnakeCase(rawName))
+    
+    const source: Source = url("./files/entity_request");
+    const params = {
+        name: finalName,
+        rawName,
+        path: '../..'
+    }
+    return generateTemplate(source, options, folder, params)
+}
+
 // You don't have to export the function as default. You can also have more than one rule factory
 // per file.
-export function backendCli(options: any): Rule {
+export function backendCli(options: any): any {
     return async (_tree: Tree, _context: SchematicContext) => {
-        while (true) {
-            const answerModule = await askQuestionModule()
+        
+        const answerModule = await askQuestionModule()
+        let answerFile = null
 
-            let source = url("./files/controller")
-            let answerFile = null
+        switch (answerModule.module) {
+            case Module.Controller:
+                answerFile = await askQuestionFile()
+                return createController(Module.Controller, answerFile.name, options)
 
-            switch (answerModule.module) {
-                case Module.Controller:
-                    answerFile = await askQuestionFile()
-                    return createController(Module.Controller, answerFile.name, options)
-                    break;
-                case Module.ControllerResource:
-                    answerFile = await askQuestionFile()
-                    return createControllerResource(Module.Controller, answerFile.name, options)
-                    break;
-                case Module.Entity:
-                    answerFile = await askQuestionFile()
-                    return createEntity(Module.Entity, answerFile.name, options)
-                    break;
-                case Module.EntityRequest:
-                        
-                    break;
-                case Module.Service:
-                    answerFile = await askQuestionFile()
-                    return createService(Module.Service, answerFile.name, options)
-                    break;
-                case Module.ControllerEntityService:
-                    answerFile = await askQuestionFile()
-                    const answerResource = await askQuestionResource()
-                    if (answerResource.resource == Confirm.Yes) {
-                        await createControllerResource(Module.Controller, answerFile.name, options)
-                    } else {
-                        await createController(Module.Controller, answerFile.name, options)
-                    }
-                    await createEntity(Module.Entity, answerFile.name, options)
-                    createService(Module.Service, answerFile.name, options)
-                    break
-                default:
-                    break;
-            }
+            case Module.ControllerResource:
+                answerFile = await askQuestionFile()
+                return createControllerResource(Module.Controller, answerFile.name, options)
+                
+            case Module.Entity:
+                answerFile = await askQuestionFile()
+                return createEntity(Module.Entity, answerFile.name, options)
+                
+            case Module.EntityRequest:
+                answerFile = await askQuestionFile()
+                return createEntityRequest(Module.EntityRequest, answerFile.name, options)
 
-
+            case Module.Service:
+                answerFile = await askQuestionFile()
+                return createService(Module.Service, answerFile.name, options)
+                
+            case Module.ControllerEntityService:
+                answerFile = await askQuestionFile()
+                const answerResource = await askQuestionResource()
+                let controllerTree = null
+                if (answerResource.resource == Confirm.Yes) {
+                    controllerTree = await createControllerResource(Module.Controller, answerFile.name, options)
+                } else {
+                    controllerTree = createController(Module.Controller, answerFile.name, options)
+                }
+                const entityTree = await createEntity(Module.Entity, answerFile.name, options)
+                const serviceTree = await createService(Module.Service, answerFile.name, options)
+                return chain([
+                    controllerTree,
+                    entityTree,
+                    serviceTree
+                ])
         }
+        
     };
 }

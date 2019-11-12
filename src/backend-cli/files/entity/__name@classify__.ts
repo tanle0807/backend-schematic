@@ -19,4 +19,4 @@ export class <%= classify(name) %> extends CoreEntity {
     @JsonProperty()
     field1: string
 
-}
+} // END FILE
