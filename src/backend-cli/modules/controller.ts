@@ -87,25 +87,30 @@ const askQuestionControllerSubFolder = (choices: any[]) => {
     });
 };
 
+const removeLastFolderInPath = (path: string): string => {
+    const pieces = path.split('/')
+    pieces.splice(pieces.length -2 , 1)
+
+    console.log('pieces:', pieces)
+    return pieces.join('/')
+}
+
 export const injectController = async (tree: Tree): Promise<Tree> => {
     let path = './src/controller/'
     const originPath = './src/controller/'
-    console.log('path:', path)
+
     let done = true
     while (done) {
         const choices = getSubFileAndFolder(path, tree)
 
         // Don't have anything inside
-        if (!choices.length) {
-            const {back} = await askQuestionBack()
-            if (back == Confirm.Yes) {
-                path
-            } else {
-                done = false
-                break
-            }
-        }
         const { ctlSub } = await askQuestionControllerSubFolder(choices)
+
+        if (ctlSub == 'BACK') {
+            if (path == originPath) return tree
+            path = removeLastFolderInPath(path)
+            continue
+        } 
         if (ctlSub.includes('.')) {
             path += ctlSub
             done = false
@@ -127,7 +132,7 @@ export const injectController = async (tree: Tree): Promise<Tree> => {
             injectString = 'console.log(0)'
             break;
         case Injection.FindAll:
-
+            injectString = 'console.log(1)'
             break;
 
     }

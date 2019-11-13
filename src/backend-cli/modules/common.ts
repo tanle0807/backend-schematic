@@ -43,12 +43,14 @@ export const generateTemplate = (source: Source, options: any, folder: string, p
 }
 
 export function getSubFileAndFolder(folder: string, tree: Tree): any[] {
-    const subControllerFolder = tree.getDir(folder).subdirs
-    const subControllerFile = tree.getDir(folder).subfiles
+    let subControllerFolder = tree.getDir(folder).subdirs
+    let subControllerFile = tree.getDir(folder).subfiles
+    let separatorFolder = subControllerFolder.length 
+                        ? new inquirer.Separator('----------FOLDERS------------') 
+                        : new inquirer.Separator('----------NO FOLDERS-----------')
+    let separatorFile = subControllerFile.length 
+                        ? new inquirer.Separator('-----------FILES------------')
+                        : new inquirer.Separator('-----------NO FILES------------')
 
-    if (!subControllerFolder.length && !subControllerFile.length) {
-        return []
-    }
-
-    return [new inquirer.Separator('-----------FOLDERS------------'), ...subControllerFolder, new inquirer.Separator('-----------FILES------------'), ...subControllerFile]
+    return [separatorFolder, ...subControllerFolder, separatorFile, ...subControllerFile, new inquirer.Separator('-------------------------------'), 'BACK'].filter(Boolean)
 }
