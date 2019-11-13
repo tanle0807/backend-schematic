@@ -13,7 +13,8 @@ const enum Module {
     Entity = 'ENTITY',
     EntityRequest = 'ENTITY_REQUEST',
     Service = 'SERVICE',
-    ControllerEntityService = 'CONTROLLER + ENTITY + SERVICE'
+    ControllerEntityService = 'CONTROLLER + ENTITY + SERVICE',
+    Inject = 'INJECT'
 }
 
 const toCamelCase = (str: any) => {
@@ -85,21 +86,6 @@ const generateTemplate = (source: Source, options: any, folder: string, params: 
         move(normalize(folder))
     ]);
 
-    // const transformedSource: Source = apply(source, [
-    //     move(normalize(options.folder))
-    // ]);
-    // const templateSource = apply(
-    //     transformedSource,
-    //     [
-    //         template({
-    //             ...strings,
-    //             ...options,
-    //             name: 'hello'
-    //         }),
-    //     ]
-    // );
-    // console.log('answers:', answers)
-    // // tree.create('admin/hello.js', 'console.log()')
     return branchAndMerge(mergeWith(transformedSource));
 }
 
