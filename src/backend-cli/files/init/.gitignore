@@ -1,0 +1,9 @@
+node_modules
+log/
+dist/
+deploy/
+uploads/
+src/uploads/*
+
+
+config.ts
