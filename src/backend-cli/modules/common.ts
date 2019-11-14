@@ -19,6 +19,24 @@ export const toCamelCase = (str: any) => {
     return s.slice(0, 1).toLowerCase() + s.slice(1);
 };
 
+export const toKebabCase = (str: any) =>
+    str &&
+    str
+        .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+        .map((x: any) => x.toLowerCase())
+        .join('-');
+
+export const toTitleCase = (str: any) =>
+    str
+        .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+        .map((x: any) => x.charAt(0).toUpperCase() + x.slice(1))
+        .join(' ');
+
+export const capitalize = ([first, ...rest]: string, lowerRest = false) =>
+    {
+        return first.toUpperCase() + (lowerRest ? rest.join('').toLowerCase() : rest.join(''));
+    };
+
 export const toSnakeCase = (str: any) => {
     str &&
     str
@@ -53,4 +71,19 @@ export function getSubFileAndFolder(folder: string, tree: Tree): any[] {
                         : new inquirer.Separator('-----------NO FILES------------')
 
     return [separatorFolder, ...subControllerFolder, separatorFile, ...subControllerFile, new inquirer.Separator('-------------------------------'), 'BACK'].filter(Boolean)
+}
+
+export const askQuestionSubFolder = (choices: any[]): any => {
+    return inquirer.prompt({
+        type: "list",
+        name: "ctlSub",
+        message: "INJECT TO?",
+        choices
+    });
+};
+
+export const removeLastFolderInPath = (path: string): string => {
+    const pieces = path.split('/')
+    pieces.splice(pieces.length - 2, 1)
+    return pieces.join('/')
 }

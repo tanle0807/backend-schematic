@@ -1,6 +1,7 @@
 import inquirer = require("inquirer");
 import { Rule, SchematicContext, Tree, apply, url, template, branchAndMerge, mergeWith, Source, move, chain, UpdateRecorder } from '@angular-devkit/schematics';
 import { injectController } from "./controller";
+import { injectPrivateConstructor } from "./privateConstructor";
 
 const enum Injection {
     Controller = 'CONTROLLER',
@@ -22,7 +23,7 @@ export const handleInjection = async (tree: Tree): Promise<any> => {
         case Injection.Controller:
             return injectController(tree)
         case Injection.PrivateConstructor:
-
+            return injectPrivateConstructor(tree)
             break;
         default:
             break;

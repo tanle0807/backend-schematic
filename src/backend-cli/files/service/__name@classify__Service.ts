@@ -8,6 +8,8 @@ import { <%= classify(name) %> } from "../entity/<%= classify(name) %>";
 
 @Service()
 export class <%= classify(name) %>Service extends CoreService {
+    constructor() { }
+
     public async function() {
 
     }
