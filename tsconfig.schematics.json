@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "rootDir": "",
+        "outDir": "dist",
+        "lib": ["es2017", "dom"],
+        "declaration": true,
+        "module": "commonjs",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "noEmitOnError": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noUnusedParameters": false,
+        "noUnusedLocals": false,
+        "skipDefaultLibCheck": true,
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strictNullChecks": true,
+        "target": "es6",
+        "types": ["node"]
+    },
+    "include": [
+        "src/**/*", "src/my-component/files"
+    ],
+    "exclude": [
+        "src/*/files/**/*"
+    ]
+}

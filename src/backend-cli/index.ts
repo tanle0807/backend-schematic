@@ -4,6 +4,7 @@ import { createController, createControllerResource } from './modules/controller
 import { createEntity, createEntityRequest } from './modules/entity';
 import { createService } from './modules/service';
 import { handleInjection } from './modules/injection';
+import { initProject } from './modules/init';
 
 export const enum Confirm {
     Yes = 'YES',
@@ -17,6 +18,7 @@ const enum Module {
     EntityRequest = 'ENTITY_REQUEST',
     Service = 'SERVICE',
     ControllerEntityService = 'CONTROLLER + ENTITY + SERVICE',
+    InitProject = 'INIT PROJECT',
     Inject = 'INJECT'
 }
 
@@ -25,7 +27,16 @@ const askQuestionModule = () => {
         type: "list",
         name: "module",
         message: "CREATE MODULE?",
-        choices: [Module.Controller, Module.ControllerResource, Module.Entity, Module.EntityRequest, Module.Service, Module.ControllerEntityService, Module.Inject]
+        choices: [
+            Module.Controller, 
+            Module.ControllerResource, 
+            Module.Entity, 
+            Module.EntityRequest, 
+            Module.Service, 
+            Module.ControllerEntityService, 
+            Module.InitProject,
+            Module.Inject
+        ]
     });
 };
 
@@ -94,6 +105,8 @@ export function backendCli(options: any): any {
                 ])
             case Module.Inject:
                 return await handleInjection(tree)
+            case Module.InitProject:
+                return await initProject()
         }
         
     };

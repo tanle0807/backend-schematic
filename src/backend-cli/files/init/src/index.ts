@@ -6,5 +6,3 @@ new Server().start()
     .catch((err) => {
         console.error(err);
     })
-
-

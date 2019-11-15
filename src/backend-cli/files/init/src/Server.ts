@@ -1,3 +1,4 @@
+// IMPORT LIBRARY
 import { ServerLoader, ServerSettings, GlobalAcceptMimesMiddleware, Err } from "@tsed/common";
 import Path from "path";
 import compression from "compression";  // compresses requests
@@ -10,15 +11,16 @@ import timezone from 'moment-timezone';
 import "@tsed/multipartfiles";
 import multer from "multer";
 import moment from "moment";
+import fs from 'fs';
+import md5 from 'md5';
 
+// IMPORT CUSTOM
 import config from '../config'
 import responseAPI from './middleware/response/responseAPI';
 import handleError from "./middleware/error/handleError";
 import handleNotFound from "./middleware/error/handleNotFound";
-import './middleware/response/customSendResponse';
-import fs from 'fs';
-import md5 from 'md5';
 import logger from './util/logger';
+import './middleware/response/customSendResponse';
 
 //---------------------------------
 //     Config port - SSL
@@ -48,7 +50,6 @@ if (config.ENV == 'product') {
 
 const storage = multer.diskStorage({
     destination: (req: Express.Request, file: Express.Multer.File, callback: (error: Error | null, destination: string) => void) => {
-
         let controller = req.ctx.endpoint.targetName
         let des = controller.replace("Controller", "").toLowerCase()
         if (!des) {
@@ -64,6 +65,7 @@ const storage = multer.diskStorage({
     }
 
 });
+
 //---------------------------------
 //     Config server
 //---------------------------------
@@ -71,9 +73,7 @@ const prefix = config.PREFIX_URL
 const option = {
     httpsOptions,
     rootDir,
-    socketIO: {
-
-    },
+    socketIO: {},
     statics: {
         "/": `${config.STATIC_DIR}`
     },
@@ -100,17 +100,15 @@ const option = {
     ],
     multer: {
         storage,
-    },
-
+    }
 }
-
 
 //---------------------------------
 //     Config timezone
 //---------------------------------
 timezone.tz.setDefault("Asia/Ho_Chi_Minh");
 
-
+// SERVER
 @ServerSettings({ ...option, ...port })
 export class Server extends ServerLoader {
 
@@ -149,6 +147,3 @@ export class Server extends ServerLoader {
         console.error(err);
     }
 }
-
-// new Server().start();
-// 

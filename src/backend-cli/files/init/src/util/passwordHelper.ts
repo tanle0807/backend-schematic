@@ -9,5 +9,3 @@ export const hashPassword = (password: string): Promise<string> => {
 export const validatePassword = (password: string, hash: string): Promise<boolean> => {
     return bcrypt.compare(password, hash)
 }
-
-

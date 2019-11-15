@@ -1,12 +1,12 @@
 const SECOND_IN_A_YEAR = 60 * 60 * 24 * 30 * 12
 
 const config = {
-    APPLICATION_NAME: 'HFV',
+    APPLICATION_NAME: '<%= projectName %>',
     ENV: 'dev',
-    PORT: 4050,
+    PORT: <%= 4000 + +projectCode %>,
     HOST: '192.168.1.123',
     PREFIX_TABLE: 'ep_',
-    JWT_SECRET: 'NEETEAM_056_HFV',
+    JWT_SECRET: 'NEETEAM_<%= projectCode %>_<%= projectName %>',
     JWT_EXPIRE: SECOND_IN_A_YEAR, // 1 YEAR
     LOG_PATH: './log',
     UPLOAD_DIR: "uploads",
@@ -18,7 +18,7 @@ const config = {
         port: 3306,
         username: 'username',
         password: 'password',
-        database: '056hfv',
+        database: '<%= dbName %>',
         bigNumberStrings: false,
         name: 'default',
         synchronize: true,

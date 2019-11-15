@@ -1,8 +1,8 @@
-import config from '../../config';
 import moment from 'moment';
 
-const SECONDS_IN_A_DAY = 60 * 60 * 24
+import config from '../../config';
 
+const SECONDS_IN_A_DAY = 60 * 60 * 24
 /**
  * ==============================================================================
  * ====================================STRING====================================
@@ -132,6 +132,15 @@ export function getTodayInterval(): { start: number, end: number } {
 export function getThisWeekInterval(): { start: number, end: number } {
     let start = moment().startOf("isoWeeks")
     let end = start.clone().add(1, "weeks")
+    return {
+        start: start.valueOf() / 1000,
+        end: end.valueOf() / 1000
+    }
+}
+
+export function getDateInterval(date: any): { start: number, end: number } {
+    let start = moment(date).startOf("day")
+    let end = start.clone().add(1, "days")
     return {
         start: start.valueOf() / 1000,
         end: end.valueOf() / 1000
