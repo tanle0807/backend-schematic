@@ -8,7 +8,8 @@ enum Injection {
     FindAll = 'GET LIST ALL',
     GetItem = 'GET ITEM',
     CreateItem = 'CREATE ITEM NORMAL',
-    CreateItemRequest = 'CREATE ITEM FROM ENTITY REQUEST'
+    CreateItemRequest = 'CREATE ITEM FROM ENTITY REQUEST',
+    Delete = 'DELETE'
 }
 
 enum GetList {
@@ -23,11 +24,12 @@ const askQuestionInject = () => {
         name: "ctlSub",
         message: "INJECT FUNCTION? ",
         choices: [
-            Injection.Pagination, 
-            Injection.FindAll, 
-            Injection.GetItem, 
+            Injection.Pagination,
+            Injection.FindAll,
+            Injection.GetItem,
             Injection.CreateItem,
-            Injection.CreateItemRequest
+            Injection.CreateItemRequest,
+            Injection.Delete
         ]
     });
 };
@@ -252,6 +254,31 @@ const generateCreateItemRequest = (name: string, entityRequest: string) => {
     template = template.replace(/{{entityRequest}}/g, entityRequest);
     return template
 }
+
+const generateDelete = (name: string) => {
+    const camel = toCamelCase(name)
+    const cap = capitalize(name)
+    let template = `
+    // =====================DELETE=====================
+    @Post('/:{{camel}}Id/delete')
+    @UseAuth(VerificationJWT)
+    @Validator({
+    })
+    async delete(
+        @Req() req: Request,
+        @Res() res: Response,
+        @HeaderParams("token") token: string,
+        @PathParams("{{camel}}Id") {{camel}}Id: number,
+    ) {
+        let {{camel}} = await {{cap}}.findOneOrThrowId({{camel}}Id)
+        await {{camel}}.remove()
+        return res.sendOk({{camel}})
+    }
+    `
+    template = template.replace(/{{camel}}/g, camel);
+    template = template.replace(/{{cap}}/g, cap);
+    return template
+}
 // =========================INJECTION======================
 
 const getTemplateFunction = async (name: string, tree: Tree) => {
@@ -283,6 +310,9 @@ const getTemplateFunction = async (name: string, tree: Tree) => {
             }
             injectString = generateCreateItemRequest(name, entityRequest)
             break;
+        case Injection.Delete:
+            injectString = generateDelete(name)
+            break;
     }
     return injectString
 }
@@ -292,7 +322,7 @@ export const injectController = async (tree: Tree): Promise<Tree> => {
     const originPath = './src/controller/'
     let name = ''
     let done = true
-    
+
     while (done) {
         const choices = getSubFileAndFolder(path, tree)
 
@@ -303,7 +333,7 @@ export const injectController = async (tree: Tree): Promise<Tree> => {
             if (path == originPath) return handleInjection(tree)
             path = removeLastFolderInPath(path)
             continue
-        } 
+        }
         if (ctlSub.includes('.')) {
             let [filename, extension] = ctlSub.split('.')
             filename = filename.replace('Controller', '')
@@ -323,7 +353,7 @@ export const injectController = async (tree: Tree): Promise<Tree> => {
         return handleInjection(tree)
     }
 
-    
+
     // Read content
     const buffer = tree.read(path);
     const content = buffer ? buffer.toString() : '';
