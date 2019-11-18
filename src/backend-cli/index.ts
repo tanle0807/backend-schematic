@@ -11,12 +11,16 @@ export const enum Confirm {
     No = 'NO'
 }
 
+const enum Controller {
+    Resource = 'RESOURCE',
+    Normal = 'NORMAL'
+}
+
 const enum Module {
-    Controller = 'CONTROLLER',
-    ControllerResource = 'CONTROLLER RESOURCE',
+    Controller = 'CONTROLLERS',
     Entity = 'ENTITY',
-    EntityRequest = 'ENTITY_REQUEST',
-    Service = 'SERVICE',
+    EntityRequest = 'ENTITY-REQUEST',
+    Service = 'SERVICES',
     ControllerEntityService = 'CONTROLLER + ENTITY + SERVICE',
     InitProject = 'INIT PROJECT',
     Inject = 'INJECT'
@@ -28,8 +32,7 @@ const askQuestionModule = () => {
         name: "module",
         message: "CREATE MODULE?",
         choices: [
-            Module.Controller, 
-            Module.ControllerResource, 
+            Module.Controller,
             Module.Entity, 
             Module.EntityRequest, 
             Module.Service, 
@@ -58,6 +61,15 @@ const askQuestionResource = () => {
     });
 };
 
+const askQuestionController = () => {
+    return inquirer.prompt({
+        type: "list",
+        name: "controller",
+        message: "CREATE CONTROLLER?",
+        choices: [Controller.Resource, Controller.Normal]
+    });
+};
+
 // You don't have to export the function as default. You can also have more than one rule factory
 // per file.
 export function backendCli(options: any): any {
@@ -69,11 +81,13 @@ export function backendCli(options: any): any {
         switch (answerModule.module) {
             case Module.Controller:
                 answerFile = await askQuestionFile()
-                return createController(Module.Controller, answerFile.name, options)
+                const { controller } = await askQuestionController()
+                if (controller == Controller.Resource) {
+                    return createControllerResource(Module.Controller, answerFile.name, options)
+                } else {
+                    return createController(Module.Controller, answerFile.name, options)
+                }
 
-            case Module.ControllerResource:
-                answerFile = await askQuestionFile()
-                return createControllerResource(Module.Controller, answerFile.name, options)
                 
             case Module.Entity:
                 answerFile = await askQuestionFile()

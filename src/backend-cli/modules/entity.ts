@@ -24,8 +24,6 @@ export const createEntity = async (module: string, rawName: string, options: any
 export const createEntityRequest = async (module: string, rawName: string, options: any): Promise<Rule> => {
     // const 
     let folder = `src/${module.toLowerCase()}/`
-
-    console.log('words(toSnakeCase(rawName)):', words(toSnakeCase(rawName)))
     const [finalName, request] = words(toSnakeCase(rawName))
 
     const source: Source = url("./files/entity_request");

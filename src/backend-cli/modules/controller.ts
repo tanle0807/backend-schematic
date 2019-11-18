@@ -11,6 +11,11 @@ enum Injection {
     CreateItemRequest = 'CREATE ITEM FROM ENTITY REQUEST'
 }
 
+enum GetList {
+    Pagination = 'PAGINATION',
+    FindAll = 'ALL',
+}
+
 // =========================ASK QUESTION======================
 const askQuestionInject = () => {
     return inquirer.prompt({
@@ -31,8 +36,8 @@ const askQuestionPagination = () => {
     return inquirer.prompt({
         type: "list",
         name: "pagination",
-        message: "DO YOU WANT PAGINATION?",
-        choices: [Confirm.Yes, Confirm.No]
+        message: "GET LIST WITH",
+        choices: [GetList.Pagination, GetList.FindAll]
     });
 };
 
@@ -98,7 +103,7 @@ export const createControllerResource = async (module: string, rawName: string, 
         controller: `${toCamelCase(finalSub)}/${toCamelCase(finalName)}`,
         docs: finalSub,
         path: '../..',
-        pagination: answerPagination.pagination == Confirm.Yes
+        pagination: answerPagination.pagination == GetList.Pagination
     }
     return generateTemplate(source, options, folder, params)
 }
