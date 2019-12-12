@@ -42,6 +42,7 @@ export class <%= classify(name) %>Controller {
         return res.sendOK(<%= camelize(name) %>) <% } %>
     }
 
+
     // =====================GET ITEM=====================
     @Get('/:<%= camelize(name) %>Id')
     @UseAuth(VerificationJWT)
@@ -58,6 +59,7 @@ export class <%= classify(name) %>Controller {
         return res.sendOK(<%= camelize(name) %>)
     }
 
+
     // =====================CREATE ITEM=====================
     @Post('')
     @UseAuth(VerificationJWT)
@@ -73,6 +75,7 @@ export class <%= classify(name) %>Controller {
         await <%= camelize(name) %>.save()
         return res.sendOK(<%= camelize(name) %>)
     }
+    
 
     // =====================UPDATE ITEM=====================
     @Post('/:<%= camelize(name) %>Id/update')
@@ -90,7 +93,7 @@ export class <%= classify(name) %>Controller {
     ) {
         // This will check and throw error if not exist 
         await <%= classify(name) %>.findOneOrThrowId(<%= camelize(name) %>Id)
-        <%= camelize(name) %>.id = <%= camelize(name) %>Id
+        <%= camelize(name) %>.id = +<%= camelize(name) %>Id
         await <%= camelize(name) %>.save()
         return res.sendOK(<%= camelize(name) %>)
     }

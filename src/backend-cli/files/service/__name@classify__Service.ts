@@ -13,4 +13,4 @@ export class <%= classify(name) %>Service extends CoreService {
     public async function() {
 
     }
-}
+} //END FILE

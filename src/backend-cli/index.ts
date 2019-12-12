@@ -1,8 +1,8 @@
 import { Rule, SchematicContext, Tree, apply, url, template, branchAndMerge, mergeWith, Source, move, chain, UpdateRecorder } from '@angular-devkit/schematics';
 import inquirer from 'inquirer';
-import { createController, createControllerResource } from './modules/controller'
-import { createEntity, createEntityRequest } from './modules/entity';
-import { createService } from './modules/service';
+import { createController, createControllerResource, injectController } from './modules/controller'
+import { createEntity, createEntityRequest, injectEntity } from './modules/entity';
+import { createService, injectService } from './modules/service';
 import { handleInjection } from './modules/injection';
 import { initProject } from './modules/init';
 
@@ -23,7 +23,9 @@ const enum Module {
     Service = 'SERVICES',
     ControllerEntityService = 'CONTROLLER + ENTITY + SERVICE',
     InitProject = 'INIT PROJECT',
-    Inject = 'INJECT'
+    InjectController = 'INJECT CONTROLLER',
+    InjectEntity = 'INJECT ENTITY',
+    InjectService = "INJECT SERVICE"
 }
 
 const askQuestionModule = () => {
@@ -33,12 +35,14 @@ const askQuestionModule = () => {
         message: "CREATE MODULE?",
         choices: [
             Module.Controller,
-            Module.Entity, 
-            Module.EntityRequest, 
-            Module.Service, 
-            Module.ControllerEntityService, 
+            Module.Entity,
+            Module.EntityRequest,
+            Module.Service,
+            Module.ControllerEntityService,
             Module.InitProject,
-            Module.Inject
+            Module.InjectController,
+            Module.InjectEntity,
+            Module.InjectService
         ]
     });
 };
@@ -74,7 +78,7 @@ const askQuestionController = () => {
 // per file.
 export function backendCli(options: any): any {
     return async (tree: Tree, _context: SchematicContext) => {
-        
+
         const answerModule = await askQuestionModule()
         let answerFile = null
 
@@ -88,11 +92,10 @@ export function backendCli(options: any): any {
                     return createController(Module.Controller, answerFile.name, options)
                 }
 
-                
             case Module.Entity:
                 answerFile = await askQuestionFile()
                 return createEntity(Module.Entity, answerFile.name, options)
-                
+
             case Module.EntityRequest:
                 answerFile = await askQuestionFile()
                 return createEntityRequest(Module.EntityRequest, answerFile.name, options)
@@ -100,7 +103,7 @@ export function backendCli(options: any): any {
             case Module.Service:
                 answerFile = await askQuestionFile()
                 return createService(Module.Service, answerFile.name, options)
-                
+
             case Module.ControllerEntityService:
                 answerFile = await askQuestionFile()
                 const answerResource = await askQuestionResource()
@@ -117,11 +120,15 @@ export function backendCli(options: any): any {
                     entityTree,
                     serviceTree
                 ])
-            case Module.Inject:
-                return await handleInjection(tree)
+            case Module.InjectController:
+                return await injectController(tree)
+            case Module.InjectEntity:
+                return await injectEntity(tree)
+            case Module.InjectService:
+                return await injectService(tree)
             case Module.InitProject:
                 return await initProject()
         }
-        
+
     };
 }

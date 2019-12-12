@@ -2,7 +2,7 @@
 import { JsonProperty } from "@tsed/common";
 
 // IMPORT CUSTOM
-import { Withdraw } from '../entity/Withdraw';
+import { <%= classify(name) %> } from '../entity/<%= classify(name) %>';
 
 export class <%= classify(rawName) %> {
     // Transform to draw entity

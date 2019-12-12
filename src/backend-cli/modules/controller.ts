@@ -9,12 +9,18 @@ enum Injection {
     GetItem = 'GET ITEM',
     CreateItem = 'CREATE ITEM NORMAL',
     CreateItemRequest = 'CREATE ITEM FROM ENTITY REQUEST',
-    Delete = 'DELETE'
+    Delete = 'DELETE',
+    Upload = 'UPLOAD'
 }
 
 enum GetList {
     Pagination = 'PAGINATION',
     FindAll = 'ALL',
+}
+
+enum TypeImport {
+    Customer = 'CUSTOM',
+    Library = 'LIBRARY'
 }
 
 // =========================ASK QUESTION======================
@@ -29,7 +35,8 @@ const askQuestionInject = () => {
             Injection.GetItem,
             Injection.CreateItem,
             Injection.CreateItemRequest,
-            Injection.Delete
+            Injection.Delete,
+            Injection.Upload
         ]
     });
 };
@@ -272,7 +279,27 @@ const generateDelete = (name: string) => {
     ) {
         let {{camel}} = await {{cap}}.findOneOrThrowId({{camel}}Id)
         await {{camel}}.remove()
-        return res.sendOk({{camel}})
+        return res.sendOK({{camel}})
+    }
+    `
+    template = template.replace(/{{camel}}/g, camel);
+    template = template.replace(/{{cap}}/g, cap);
+    return template
+}
+
+const generateUpload = (name: string) => {
+    const camel = toCamelCase(name)
+    const cap = capitalize(name)
+    let template = `
+    // =====================UPLOAD IMAGE=====================
+    @Post('/image/upload')
+    @UseAuth(VerificationJWT)
+    uploadFile(
+        @MultipartFile('image') file: Express.Multer.File,
+        @HeaderParams('token') token: string
+    ) {
+        file.path = file.path.replace(config.UPLOAD_DIR, '');
+        return file;
     }
     `
     template = template.replace(/{{camel}}/g, camel);
@@ -281,7 +308,7 @@ const generateDelete = (name: string) => {
 }
 // =========================INJECTION======================
 
-const getTemplateFunction = async (name: string, tree: Tree) => {
+const getTemplateFunction = async (name: string, tree: Tree, path: any) => {
     const answersInject = await askQuestionInject()
     let injectString = ''
     switch (answersInject.ctlSub) {
@@ -300,7 +327,6 @@ const getTemplateFunction = async (name: string, tree: Tree) => {
         case Injection.CreateItemRequest:
             let entityRequest = ''
             entityRequest = await askQuestionEntity(tree)
-            console.log('entityRequest:', entityRequest)
             if (!entityRequest) {
                 const { entity } = await askQuestionInputEntityRequest()
                 if (!entity) {
@@ -313,13 +339,42 @@ const getTemplateFunction = async (name: string, tree: Tree) => {
         case Injection.Delete:
             injectString = generateDelete(name)
             break;
+        case Injection.Upload:
+            injectString = generateUpload(name)
+            updateImportLibrary(path, tree, TypeImport.Library, `import { MultipartFile } from '@tsed/multipartfiles';`)
+            updateImportLibrary(path, tree, TypeImport.Customer, `import config from '../../../config';`)
+            break;
     }
     return injectString
 }
 
+const updateImportLibrary = (path: any, tree: any, typeImport: any, injectString: any) => {
+    const pattern = typeImport == TypeImport.Library ? '// IMPORT LIBRARY' : '// IMPORT CUSTOM'
+    // Read content
+    const buffer = tree.read(path);
+    const content = buffer ? buffer.toString() : '';
+    // Update content
+    const updateRecorder: UpdateRecorder = tree.beginUpdate(path);
+    const position = content.indexOf(pattern)
+    updateRecorder.insertRight(position + pattern.length, `\n${injectString}`);
+    tree.commitUpdate(updateRecorder);
+}
+
+const updateContentClass = (path: any, tree: any, injectString: any) => {
+    // Read content
+    const buffer = tree.read(path);
+    const content = buffer ? buffer.toString() : '';
+    // Update content
+    const updateRecorder: UpdateRecorder = tree.beginUpdate(path);
+    const pattern = '} //END FILE'
+    const position = content.indexOf(pattern)
+    updateRecorder.insertLeft(position, `${injectString}\n`);
+    tree.commitUpdate(updateRecorder);
+}
+
 export const injectController = async (tree: Tree): Promise<Tree> => {
-    let path = './src/controller/'
-    const originPath = './src/controller/'
+    let path = './src/controllers/'
+    const originPath = './src/controllers/'
     let name = ''
     let done = true
 
@@ -346,23 +401,14 @@ export const injectController = async (tree: Tree): Promise<Tree> => {
     }
 
     // Ask which template to inject
-    const injectString = await getTemplateFunction(name, tree)
+    const injectString = await getTemplateFunction(name, tree, path)
 
     // Done find exact file
     if (path.endsWith('/')) {
         return handleInjection(tree)
     }
 
-
-    // Read content
-    const buffer = tree.read(path);
-    const content = buffer ? buffer.toString() : '';
-    // Update content
-    const updateRecorder: UpdateRecorder = tree.beginUpdate(path);
-    const pattern = '} // END FILE'
-    const position = content.indexOf(pattern)
-    updateRecorder.insertLeft(position, `${injectString}\n`);
-    tree.commitUpdate(updateRecorder);
+    updateContentClass(path, tree, injectString)
 
     return tree;
 }
